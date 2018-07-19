@@ -23,6 +23,7 @@ function paginate(query, options, callback) {
   let select = options.select;
   let sort = options.sort;
   let collation = options.collation || {};
+  console.log(collation)
   let populate = options.populate;
   let lean = options.lean || false;
   let leanWithId = options.leanWithId ? options.leanWithId : true;
@@ -59,7 +60,10 @@ function paginate(query, options, callback) {
     if (lean && leanWithId) {
       promises.docs = promises.docs.then((docs) => {
         docs.forEach((doc) => {
-          doc.id = String(doc._id);
+          if(doc._id) {
+            doc.id = String(doc._id);
+            delete doc._id;
+          }
         });
         return docs;
       });
@@ -68,8 +72,8 @@ function paginate(query, options, callback) {
   promises = Object.keys(promises).map((x) => promises[x]);
   return Promise.all(promises).then((data) => {
     let result = {
-      docs: data.docs,
-      total: data.count,
+      docs: data[0],
+      total: data[1],
       limit: limit
     };
     if (offset !== undefined) {
@@ -77,14 +81,12 @@ function paginate(query, options, callback) {
     }
     if (page !== undefined) {
       result.page = page;
-      result.pages = Math.ceil(data.count / limit) || 1;
+      result.pages = Math.ceil(result.count / limit) || 1;
     }
     if (typeof callback === 'function') {
       return callback(null, result);
     }
-    let promise = new Promise();
-    promise.resolve(result);
-    return promise;
+    return Promise.resolve(result);
   });
 }
 
