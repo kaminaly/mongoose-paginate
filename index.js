@@ -23,7 +23,6 @@ function paginate(query, options, callback) {
   let select = options.select;
   let sort = options.sort;
   let collation = options.collation || {};
-  console.log(collation)
   let populate = options.populate;
   let lean = options.lean || false;
   let leanWithId = options.leanWithId ? options.leanWithId : true;
